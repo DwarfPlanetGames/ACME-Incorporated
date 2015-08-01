@@ -60,7 +60,7 @@ public class Title implements Screen {
 		Gdx.gl.glClearColor(0f, 0.2f, 0.4f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		// /// - Render
+		///// - Render
 
 		for (int i = 0; i < rainDrops.size(); i++) {
 			batch.draw(rainDrop, rainDrops.get(i).x, rainDrops.get(i).y, 2 * rainDrops.get(i).speed, 64 * rainDrops.get(i).speed);
@@ -72,7 +72,7 @@ public class Title implements Screen {
 		batch.draw(overlay, 0, 0, 0, 0, 1, 1, Gdx.graphics.getWidth(),
 				Gdx.graphics.getHeight(), 0);
 
-		// /// - End Render
+		///// - End Render
 		batch.end();
 	}
 
