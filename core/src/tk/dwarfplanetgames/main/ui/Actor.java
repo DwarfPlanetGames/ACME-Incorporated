@@ -48,9 +48,7 @@ public abstract class Actor {
 		}
 	}
 	
-	public void draw(SpriteBatch batch, Texture skin) {
-		
-	}
+	public abstract void draw(SpriteBatch batch, Texture skin);
 	
 	public void touchDown(int localX, int localY) {
 		
