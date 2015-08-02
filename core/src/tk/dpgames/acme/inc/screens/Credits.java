@@ -3,6 +3,25 @@ package tk.dpgames.acme.inc.screens;
 import com.badlogic.gdx.Screen;
 
 public class Credits implements Screen {
+	
+	public static final String[] credits = new String[]{
+		"",
+		"Lead Programmer and Project Director",
+		"Brandon Dyer",
+		"","","","","",
+		"Programmers",
+		"Brandon Dyer",
+		"Ian Green",
+		"Austin White",
+		"","","","","",
+		"Composers",
+		"Luke Howard",
+		"Kevin MacLeod",
+		"","","","","",
+		"Music Titles",
+		"Oculus"
+		
+	};
 
 	@Override
 	public void show() {
