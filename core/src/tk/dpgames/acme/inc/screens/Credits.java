@@ -2,6 +2,7 @@ package tk.dpgames.acme.inc.screens;
 
 import java.util.Random;
 
+import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.Color;
@@ -36,13 +37,15 @@ public class Credits implements Screen {
 		"The Most Important",
 		"You",
 		"","","","","",
-		"<g><g><g><g><g><g>",
-		"<g><g><g><g><g><g> <g><g><g><g><g><g><g><g>",
-		"<g><g><g> <g><g><g><g><g>",
-		"<g><g><g><g> <g><g><g><g>",
-		"<g><g><g><g><g><g><g> <g><g><g><g>",
-		"<g><g><g><g><g><g> <g><g><g><g><g>",
-		"<g><g><g> <g><g><g><g><g>",
+		"<g>",
+		"<g>",
+		"<g>",
+		"<g>",
+		"<g>",
+		"<g>",
+		"<g>",
+		"","","","","",
+		"<g><g>",
 		
 	};
 	private SpriteBatch batch;
@@ -62,13 +65,16 @@ public class Credits implements Screen {
 	@Override
 	public void render(float delta) {
 		rand.setSeed(seed);
-		time += delta;
+		time += Gdx.input.isTouched() ? delta * 0.66f : delta * 2;
 		tickTime += delta;
 		if (tickTime > 1f/2f) {
 			tickTime = 0;
 			seed++;
 		}
 		Title.tickDrops(delta);
+		if (time * 100 > credits.length * 75 + Gdx.graphics.getHeight()) {
+			((Game)Gdx.app.getApplicationListener()).setScreen(new Title());
+		}
 
 		// Clear
 		Gdx.gl.glClearColor(0f, 0.2f, 0.4f, 1);
@@ -77,9 +83,13 @@ public class Credits implements Screen {
 		batch.begin();
 		Title.drawDrops(batch);
 		String[] creditNames = new String[credits.length];
-		String ap = "!@#$%^&*()<>?/0123456789ABCDEF";
+		String ap = "!@#%^&*()<>?/0123456789ABCDEF";
 		for (int i = 0; i < credits.length; i++) {
-			creditNames[i] = credits[i].replaceAll("<g>", String.valueOf(ap.charAt(rand.nextInt(ap.length()))));
+			String gen = "";
+			for (int j = 0; j < rand.nextInt(40) +10; j++) {
+				gen += String.valueOf(ap.charAt(rand.nextInt(ap.length())));
+			}
+			creditNames[i] = credits[i].replaceAll("<g>", gen);
 		}
 		for(int i=1 ; i < creditNames.length; i++){
 			if (creditNames[i - 1].equals("")) {

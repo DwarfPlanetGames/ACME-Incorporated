@@ -19,21 +19,21 @@ public class Title implements Screen {
 
 	private SpriteBatch batch;
 	private Texture title = new Texture("title.png");
-	private TextureRegion overlay = new TextureRegion(new Texture(
-			"Gradient.png"));
+	private TextureRegion overlay = new TextureRegion(new Texture("Gradient.png"));
 	private static Texture rainDrop = new Texture("rain_drop.png");
 
 	private float time = 0;
 
 	public static float scale;
-	public static Music music = Gdx.audio.newMusic(Gdx.files
-			.internal("title.mp3"));
+	public static Music music = Gdx.audio.newMusic(Gdx.files.internal("title.mp3"));
 
 	public static LinkedList<RainDrop> rainDrops = new LinkedList<RainDrop>();
+	public static boolean rained = false;
 
 	private Stage stage;
 	private Button buttonPlay;
 	private Button buttonCredits;
+	public static boolean overed = false;
 
 	@Override
 	public void show() {
@@ -41,27 +41,27 @@ public class Title implements Screen {
 		batch = new SpriteBatch();
 		Random rand = new Random();
 		rand.setSeed(System.nanoTime());
-		for (int i = 0; i < Gdx.graphics.getHeight(); i++) {
-			rainDrops.add(new RainDrop(i * 2, rand.nextInt(Gdx.graphics
-					.getHeight()), rand.nextFloat() + 0.5f + rand.nextFloat()));
+		if (!rained) {
+			for (int i = 0; i < Gdx.graphics.getHeight(); i++) {
+				rainDrops.add(new RainDrop(i * 2, rand.nextInt(Gdx.graphics.getHeight()), rand.nextFloat() + 0.5f
+						+ rand.nextFloat()));
+			}
+			rained = true;
 		}
 
 		// Setup title screen buttons
 		stage = new Stage(new Texture("skin.png"));
-		buttonPlay = new Button(Gdx.graphics.getWidth() / 2,
-				Gdx.graphics.getHeight() / 2, 128, 64, new TextureRegion(
-						new Texture("title_buttons.png"), 0, 0, 128, 64)) {
+		buttonPlay = new Button(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 2, 128, 64, new TextureRegion(
+				new Texture("title_buttons.png"), 0, 0, 128, 64)) {
 			public void tap(int localX, int localY) {
 				((Game) Gdx.app.getApplicationListener()).setScreen(new WorldSelect());
 			}
 		};
 		stage.addActor(buttonPlay);
-		buttonCredits = new Button(Gdx.graphics.getWidth() / 2,
-				Gdx.graphics.getHeight() / 4, 128, 64, new TextureRegion(
-						new Texture("title_buttons.png"), 0, 64, 128, 64)) {
+		buttonCredits = new Button(Gdx.graphics.getWidth() / 2, Gdx.graphics.getHeight() / 4, 128, 64, new TextureRegion(
+				new Texture("title_buttons.png"), 0, 64, 128, 64)) {
 			public void tap(int localX, int localY) {
-				((Game) Gdx.app.getApplicationListener())
-						.setScreen(new Credits());
+				((Game) Gdx.app.getApplicationListener()).setScreen(new Credits());
 			}
 		};
 		stage.addActor(buttonCredits);
@@ -71,60 +71,64 @@ public class Title implements Screen {
 	public void render(float delta) {
 		// Set scaling
 		scale = (Gdx.graphics.getHeight() / 720f) * 2f;
-		
-		//Set button scale
-		buttonPlay.width = (int)(128*scale);
-		buttonPlay.height = (int)(64 * scale);
+
+		// Set button scale
+		buttonPlay.width = (int) (128 * scale);
+		buttonPlay.height = (int) (64 * scale);
 		buttonPlay.x = Gdx.graphics.getWidth() / 2 - buttonPlay.width / 2;
-		buttonPlay.y = Gdx.graphics.getHeight() / 2 - (int)(32 * scale);
-		buttonCredits.width = (int)(128*scale);
-		buttonCredits.height = (int)(64 * scale);
+		buttonPlay.y = Gdx.graphics.getHeight() / 2 - (int) (32 * scale);
+		buttonCredits.width = (int) (128 * scale);
+		buttonCredits.height = (int) (64 * scale);
 		buttonCredits.x = Gdx.graphics.getWidth() / 2 - buttonCredits.width / 2;
 
 		// Set timing and overlay
 		time += delta;
-		if (time < 5f) {
+		if (time < 5f && !overed) {
 			overlay.setRegion((int) ((1 - time / 5f) * 255f), 0, 1, 1);
+		} else {
+			overed = true;
 		}
 
 		// Move rain drops
 		tickDrops(delta);
-		
-		//Act stage
+
+		// Act stage
 		stage.act(delta);
-		
-		//Clear
+
+		// Clear
 		Gdx.gl.glClearColor(0f, 0.2f, 0.4f, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
 		batch.begin();
-		
+
 		// /// - Render
-		
+
 		drawDrops(batch);
-		
+
 		stage.draw(batch);
 
-		batch.draw(title, Gdx.graphics.getWidth() / 2 - (title.getWidth() / 2)
-				* scale, Gdx.graphics.getHeight() - title.getHeight() * scale,
-				title.getWidth() * scale, title.getHeight() * scale);
-		batch.draw(overlay, 0, 0, 0, 0, 1, 1, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight(), 0);
+		batch.draw(title, Gdx.graphics.getWidth() / 2 - (title.getWidth() / 2) * scale,
+				Gdx.graphics.getHeight() - title.getHeight() * scale, title.getWidth() * scale, title.getHeight() * scale);
+		if (!overed) {
+			batch.draw(overlay, 0, 0, 0, 0, 1, 1, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0);
+		}
 
 		// /// - End Render
-		
+
 		batch.end();
 	}
-	
+
 	public static void tickDrops(float delta) {
 		for (int i = 0; i < rainDrops.size(); i++) {
 			if (!Gdx.input.isTouched()) {
 				rainDrops.get(i).y -= rainDrops.get(i).speed * delta * 600;
 				rainDrops.get(i).x -= rainDrops.get(i).speed * delta * 100;
 			} else {
-				/*rainDrops.get(i).y -= (rainDrops.get(i).speed * delta * 600)
-						* Math.abs(rainDrops.get(i).x - Gdx.input.getX())
-						/ (Gdx.graphics.getWidth() / 2);*/
+				/*
+				 * rainDrops.get(i).y -= (rainDrops.get(i).speed * delta * 600)
+				 * Math.abs(rainDrops.get(i).x - Gdx.input.getX()) /
+				 * (Gdx.graphics.getWidth() / 2);
+				 */
 				rainDrops.get(i).y -= rainDrops.get(i).speed * delta * 100;
 				rainDrops.get(i).x -= rainDrops.get(i).speed * delta * 16;
 			}
@@ -134,11 +138,11 @@ public class Title implements Screen {
 			}
 		}
 	}
-	
+
 	public static void drawDrops(SpriteBatch batch) {
 		for (int i = 0; i < rainDrops.size(); i++) {
-			batch.draw(rainDrop, rainDrops.get(i).x, rainDrops.get(i).y,
-					2 * rainDrops.get(i).speed, 64 * rainDrops.get(i).speed);
+			batch.draw(rainDrop, rainDrops.get(i).x, rainDrops.get(i).y, 2 * rainDrops.get(i).speed,
+					64 * rainDrops.get(i).speed);
 		}
 	}
 

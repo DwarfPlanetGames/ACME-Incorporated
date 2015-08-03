@@ -12,6 +12,7 @@ public class Expansion extends Actor {
 	public TextureRegion[] corners = new TextureRegion[4];
 	public TextureRegion[] sides = new TextureRegion[4];
 	public Stage stage;
+	public int v = 0;
 
 	public Expansion(float x, float y, float width, float height, int offset, Stage stage) {
 		super((int) x, (int) y, (int) width, (int) height);
@@ -20,16 +21,17 @@ public class Expansion extends Actor {
 		make();
 	}
 
-	public Expansion(float x, float y, float width, float height, int offset, float scale, Stage stage) {
+	public Expansion(float x, float y, float width, float height, int offset, float scale, Stage stage, int v) {
 		super((int) x, (int) y, (int) width, (int) height);
 		this.offset = offset;
 		this.scale = scale;
 		this.stage = stage;
+		this.v = v * 32;
 		make();
 	}
 
 	private void make() {
-		int off = 32 * 4;
+		int off = 32 * 4 + v;
 		center = new TextureRegion(stage.skin, off + offset, offset, 32 - offset * 2, 32 - offset * 2);
 		for (int y = 0; y < 2; y++) {
 			for (int x = 0; x < 2; x++) {
