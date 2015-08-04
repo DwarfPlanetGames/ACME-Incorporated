@@ -7,7 +7,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector2;
 
 public class PlayDevice implements Screen {
 
@@ -24,7 +23,7 @@ public class PlayDevice implements Screen {
 		hudOpen = true;
 		gameBatch = new SpriteBatch();
 		hudBatch = new SpriteBatch();
-		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		camera = new OrthographicCamera(Gdx.graphics.getWidth() / Title.scale, Gdx.graphics.getHeight() / Title.scale);
 		game.paused = false;
 	}
 
@@ -33,13 +32,14 @@ public class PlayDevice implements Screen {
 		if (!game.paused) {
 			game.tickGame(delta);
 			camera.position.y = GameSystem.time;
-			H.clampCam(camera, 0, 0, (int)(GameSystem.voxes.length * 16 * Title.scale), (int)(GameSystem.voxes[0].length * 16 * Title.scale));
+			H.clampCam(camera, 0, 0, (int)(GameSystem.voxes.length * 16), (int)(GameSystem.voxes[0].length * 16));
 		}
 		H.clear(0f, 0.2f, 0.4f);
 		camera.update();
 		gameBatch.begin();
 		game.renderGame(gameBatch, camera);
 		gameBatch.end();
+		gameBatch.setProjectionMatrix(camera.combined);
 		hudBatch.begin();
 		if (hudOpen) {
 			game.renderHud(delta, hudBatch);

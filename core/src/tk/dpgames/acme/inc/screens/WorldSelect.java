@@ -9,7 +9,6 @@ import tk.dwarfplanetgames.main.ui.Stage;
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -46,7 +45,7 @@ public class WorldSelect implements Screen {
 		stage.addActor(buttonBack);
 		Button go = new Button(0,0,(int)(128*Title.scale),(int)(64*Title.scale),new TextureRegion(new Texture("title_buttons.png"),0,0,128,64)){
 			public void tap(int localX, int localY) {
-				GameSystem.createWorld(LandType.flat, true);
+				GameSystem.createWorld(LandType.flat, true,100);
 				((Game)Gdx.app.getApplicationListener()).setScreen(new Play());
 			}
 		};
