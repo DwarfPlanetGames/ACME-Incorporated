@@ -12,8 +12,7 @@ public class Splash2 implements Screen {
 
 	private SpriteBatch batch;
 	private Texture logo = new Texture("charity.png");
-	private TextureRegion overlay = new TextureRegion(new Texture(
-			"Gradient.png"));
+	private TextureRegion overlay = new TextureRegion(new Texture("Gradient.png"));
 
 	private float time = 0;
 
@@ -29,15 +28,13 @@ public class Splash2 implements Screen {
 		if (time < 5f && !Gdx.input.isTouched()) {
 			overlay.setRegion((int) ((1 - time / 5f) * 255f), 0, 1, 1);
 		} else {
-			((Game)Gdx.app.getApplicationListener()).setScreen(new Title());
+			((Game) Gdx.app.getApplicationListener()).setScreen(new Title());
 		}
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		batch.begin();
-		batch.draw(logo, 0, 0, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight());
-		batch.draw(overlay, 0, 0, 0, 0, 1, 1, Gdx.graphics.getWidth(),
-				Gdx.graphics.getHeight(), 0);
+		batch.draw(logo, 0, time * 5, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		batch.draw(overlay, 0, 0, 0, 0, 1, 1, Gdx.graphics.getWidth(), Gdx.graphics.getHeight(), 0);
 		batch.end();
 	}
 

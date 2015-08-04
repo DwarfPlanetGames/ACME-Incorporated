@@ -13,11 +13,13 @@ public class Play implements Screen {
 		case Desktop:
 		case HeadlessDesktop:
 		case WebGL:
+			System.out.println("Starting desktop world");
 			((Game)Gdx.app.getApplicationListener()).setScreen(new PlayDesktop());
 			break;
 		case Android:
 		case iOS:
 		default:
+			System.out.println("Starting phone and tablet world");
 			((Game)Gdx.app.getApplicationListener()).setScreen(new PlayDevice());
 			break;
 		

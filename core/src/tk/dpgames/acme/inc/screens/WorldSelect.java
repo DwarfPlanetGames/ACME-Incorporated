@@ -1,5 +1,7 @@
 package tk.dpgames.acme.inc.screens;
 
+import tk.dpgames.acme.inc.game.GameSystem;
+import tk.dpgames.acme.inc.game.GameSystem.LandType;
 import tk.dwarfplanetgames.main.ui.Button;
 import tk.dwarfplanetgames.main.ui.Expansion;
 import tk.dwarfplanetgames.main.ui.Stage;
@@ -42,6 +44,13 @@ public class WorldSelect implements Screen {
 			}
 		};
 		stage.addActor(buttonBack);
+		Button go = new Button(0,0,(int)(128*Title.scale),(int)(64*Title.scale),new TextureRegion(new Texture("title_buttons.png"),0,0,128,64)){
+			public void tap(int localX, int localY) {
+				GameSystem.createWorld(LandType.flat, true);
+				((Game)Gdx.app.getApplicationListener()).setScreen(new Play());
+			}
+		};
+		stage.addActor(go);
 		font = new BitmapFont(Gdx.files.internal("default.fnt"));
 		font.setColor(1.0f,0.7f,0.5f,1f);
 		font.getData().setScale(((float) Gdx.graphics.getHeight() / 720f) * 1.6f);
