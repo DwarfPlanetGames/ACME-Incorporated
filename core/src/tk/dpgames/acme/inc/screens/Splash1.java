@@ -23,7 +23,7 @@ public class Splash1 implements Screen {
 		batch = new SpriteBatch();
 		Title.music.setVolume(0.4f);
 		Title.music.setLooping(true);
-		Title.music.play();
+		//Title.music.play();
 	}
 
 	@Override

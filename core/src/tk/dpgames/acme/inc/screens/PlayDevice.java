@@ -25,18 +25,20 @@ public class PlayDevice implements Screen {
 		gameBatch = new SpriteBatch();
 		hudBatch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		game.paused = false;
 	}
 
 	@Override
 	public void render(float delta) {
 		if (!game.paused) {
 			game.tickGame(delta);
-			camera.update();
-			gameBatch.setProjectionMatrix(camera.combined);
+			camera.position.y = GameSystem.time;
+			H.clampCam(camera, 0, 0, (int)(GameSystem.voxes.length * 16 * Title.scale), (int)(GameSystem.voxes[0].length * 16 * Title.scale));
 		}
 		H.clear(0f, 0.2f, 0.4f);
+		camera.update();
 		gameBatch.begin();
-		game.renderGame(gameBatch);
+		game.renderGame(gameBatch, camera);
 		gameBatch.end();
 		hudBatch.begin();
 		if (hudOpen) {
