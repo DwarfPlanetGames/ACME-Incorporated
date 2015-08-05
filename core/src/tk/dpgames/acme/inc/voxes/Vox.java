@@ -19,4 +19,6 @@ public abstract class Vox {
 	
 	public void placed(){};
 	
+	public void tick(){};
+	
 }
