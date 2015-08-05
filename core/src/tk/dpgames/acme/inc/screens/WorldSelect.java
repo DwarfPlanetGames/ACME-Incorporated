@@ -43,7 +43,7 @@ public class WorldSelect implements Screen {
 			}
 		};
 		stage.addActor(buttonBack);
-		Button go = new Button(0,0,(int)(128*Title.scale),(int)(64*Title.scale),new TextureRegion(new Texture("title_buttons.png"),0,0,128,64)){
+		Button go = new Button((int)(Gdx.graphics.getWidth()/2-64*Title.scale),128,(int)(128*Title.scale),(int)(64*Title.scale),new TextureRegion(new Texture("title_buttons.png"),0,0,128,64)){
 			public void tap(int localX, int localY) {
 				GameSystem.createWorld(LandType.flat, true,100);
 				((Game)Gdx.app.getApplicationListener()).setScreen(new Play());

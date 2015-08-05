@@ -31,8 +31,7 @@ public class PlayDevice implements Screen {
 	public void render(float delta) {
 		if (!game.paused) {
 			game.tickGame(delta);
-			camera.position.y = GameSystem.time;
-			H.clampCam(camera, 0, 0, (int)(GameSystem.voxes.length * 16), (int)(GameSystem.voxes[0].length * 16));
+			H.clampCam(camera, 16*4, 16*4, (int)(GameSystem.voxes.length * 16) - 16*4, (int)(GameSystem.voxes[0].length * 16) - 16*4);
 		}
 		H.clear(0f, 0.2f, 0.4f);
 		camera.update();
