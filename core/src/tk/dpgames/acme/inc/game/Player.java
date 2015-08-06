@@ -2,10 +2,10 @@ package tk.dpgames.acme.inc.game;
 
 import tk.dpgames.acme.inc.voxes.Vox;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
+import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
 import com.badlogic.gdx.math.Rectangle;
 
 public class Player {
@@ -18,9 +18,11 @@ public class Player {
 	public float gravity = 5f;
 	public int voxX, voxY;
 	public float texAnim = 0;
+	public boolean touchingGround = false;
+	public boolean mining = false;
+	public float jumpHeight = 500f;
 
 	private Texture tex = new Texture("player_anim.png");
-	private Texture m = new Texture("cell_sheet.png");
 
 	public Player() {
 		x = (GameSystem.voxes.length / 2) * 16;
@@ -31,38 +33,42 @@ public class Player {
 
 	public void tick(float delta) {
 		velY -= gravity;
-		if (Gdx.input.isTouched()) {
-			velY += 20;
-		}
-		velX += 1f;
+		velX -= velX * delta;
+		velY -= velY * delta;
 		collide(delta);
-		texAnim += velX * delta;
+		texAnim += Math.abs(velX * delta * 0.25f);
 		y += velY * delta;
 		x += velX * delta;
 	}
 
 	public void render(SpriteBatch batch) {
+		int w = 14;
+		int h = 26;
 		TextureRegion reg;
-		if (velY != 0){
-			reg = new TextureRegion(tex, 12, 0, 12, 24);
+		if (!touchingGround){
+			reg = new TextureRegion(tex, w, 0, w, h);
 		} else if (velX <= -0.1f || velX >= 0.1f){
-			reg = new TextureRegion(tex,24 + ((int)texAnim % 4) * 12, 0, 12, 24);
+			reg = new TextureRegion(tex,h + 2 + ((int)texAnim % 4) * w, 0, w, h);
 		} else {
-			reg = new TextureRegion(tex, 0, 0, 12, 24);
+			reg = new TextureRegion(tex, 0, 0, w, h);
 		}
 		if (velX < 0) {
 			reg.flip(true,false);
 		}
-		batch.draw(reg, x, y, width, height);
+		batch.draw(reg, x-1, y-1, w, h);
+		if (mining)
+			batch.draw(tex, x,y,(float)Math.cos(direction)*64,(float)Math.sin(direction)*64);
 	}
 
 	public void collide(float delta) {
+		touchingGround = false;
 		for (int x = (int) this.x / 16 - 8; x < (int) this.x / 16 + 8; x++) {
 			if (x > GameSystem.voxes.length) continue;
 			if (x < 0) continue;
 			for (int y = (int) this.y / 16 - 8; y < (int) this.y / 16 + 8; y++) {
 				if (y > GameSystem.voxes[0].length) continue;
 				if (y < 0) continue;
+				if (GameSystem.voxes[x][y] == null) continue;
 				Vox vox = GameSystem.voxes[x][y];
 				if (vox != null) {
 					if (vox.canCollide) {
@@ -70,6 +76,7 @@ public class Player {
 						if (col.overlaps(getBounds(Side.btm, delta))) {
 							velY = 0;
 							this.y = y * 16 + 16;
+							touchingGround = true;
 						}
 						if (col.overlaps(getBounds(Side.top, delta))) {
 							velY = 0;

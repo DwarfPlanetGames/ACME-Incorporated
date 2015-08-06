@@ -36,16 +36,6 @@ public class Credits implements Screen {
 		"","","","","",
 		"The Most Important",
 		"You",
-		"","","","","",
-		"<g>",
-		"<g>",
-		"<g>",
-		"<g>",
-		"<g>",
-		"<g>",
-		"<g>",
-		"","","","","",
-		"<g><g>",
 		
 	};
 	private SpriteBatch batch;
@@ -82,22 +72,13 @@ public class Credits implements Screen {
 
 		batch.begin();
 		Title.drawDrops(batch);
-		String[] creditNames = new String[credits.length];
-		String ap = "!@#%^&*()<>?/0123456789ABCDEF";
-		for (int i = 0; i < credits.length; i++) {
-			String gen = "";
-			for (int j = 0; j < rand.nextInt(40) +10; j++) {
-				gen += String.valueOf(ap.charAt(rand.nextInt(ap.length())));
-			}
-			creditNames[i] = credits[i].replaceAll("<g>", gen);
-		}
-		for(int i=1 ; i < creditNames.length; i++){
-			if (creditNames[i - 1].equals("")) {
+		for(int i=1 ; i < credits.length; i++){
+			if (credits[i - 1].equals("")) {
 				font.getData().setScale(((float)Gdx.graphics.getHeight() / 720f) * 1.6f);
 			} else {
 				font.getData().setScale(((float)Gdx.graphics.getHeight() / 720f) * 1.1f);
 			}
-        	font.draw(batch, creditNames[i], Gdx.graphics.getWidth() / 8, Gdx.graphics.getHeight() / 2 - i*75 + time*100);
+        	font.draw(batch, credits[i], Gdx.graphics.getWidth() / 8, Gdx.graphics.getHeight() / 2 - i*75 + time*100);
         }
 		batch.end();
 

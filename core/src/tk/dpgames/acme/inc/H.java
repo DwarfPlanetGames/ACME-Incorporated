@@ -54,7 +54,25 @@ public class H {
 	}
 
 	public static float getDist(float x1, float y1, float x2, float y2) {
-		return (float)(Math.sqrt(Math.pow(x1-x2,2) + Math.pow(y1-y2,2)));
+		return (float) (Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
+	}
+	
+	public static int pointers() {
+		int activeTouch = 0;
+		for (int i = 0; i < 20; i++) {
+			if (Gdx.input.isTouched(i)) activeTouch++;
+		}
+		return activeTouch;
+	}
+
+	public static class Point {
+		public float x;
+		public float y;
+
+		public Point(float x, float y) {
+			this.x = x;
+			this.y = y;
+		}
 	}
 
 }
