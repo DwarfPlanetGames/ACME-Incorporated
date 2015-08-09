@@ -24,8 +24,9 @@ public class PlayDevice extends InputAdapter implements Screen {
 	private boolean renderR = false;
 	private H.Point jsL = new H.Point(64 * Title.scale, 64 * Title.scale);
 	private H.Point jsR = new H.Point(Gdx.graphics.getWidth() - 64 * Title.scale - 64 * 2, 64 * Title.scale);
-	private int rPointer = 0;
-	private int lPointer = 0;
+	private int rPointer = -1;
+	private int lPointer = -1;
+	private int rX = 0, rY = 0, lX = 0, lY = 0;
 
 	@Override
 	public void show() {
@@ -41,6 +42,54 @@ public class PlayDevice extends InputAdapter implements Screen {
 	@Override
 	public void render(float delta) {
 		if (!game.paused) {
+			jsL = new H.Point(64 * Title.scale, 64 * Title.scale);                                   
+			jsR = new H.Point(Gdx.graphics.getWidth() - 64 * Title.scale - 64 * 2, 64 * Title.scale);
+			
+			jsL.x += 64;
+			jsL.y += 64;
+			jsR.x += 64;
+			jsR.y += 64;
+			
+			int screenX = rX;
+			int screenY = rY;
+			if (rPointer != -1) {
+				int x = screenX;
+				int y = Gdx.graphics.getHeight() - screenY;
+				GameSystem.player.direction = H.posToDir(jsR.x, jsR.y, x, y);
+				renderR = true;
+			}
+			screenX = lX;
+			screenY = lY;
+			if (lPointer != -1) {
+				int x = screenX;
+				int y = Gdx.graphics.getHeight() - screenY;
+				if (H.getDist(x, y, jsL.x, jsL.y) >= 128) {
+					float d = H.posToDir(jsL.x, jsL.y, x, y);
+					x = (int)(jsL.x + Math.cos(d) * 128);
+					y = (int)(jsL.y + Math.sin(d) * 128);
+				}
+				if (y > jsL.y + 32) {
+					System.out.println("JoyY=" + jsL.y + " fY=" + screenY);
+					if (GameSystem.player.touchingGround) {
+						GameSystem.player.velY += GameSystem.player.jumpHeight;
+					} else {
+						GameSystem.player.velY += GameSystem.player.jumpCont;
+					}
+					GameSystem.player.touchingGround = false;
+				}
+				if (x > jsL.x) {
+					GameSystem.player.velX = Math.abs(x - jsL.x);
+				} else if (x < jsL.x) {
+					GameSystem.player.velX = -Math.abs(x - jsL.x);
+				}
+				renderL = true;
+			}
+			
+			jsL.x -= 64;
+			jsL.y -= 64;
+			jsR.x -= 64;
+			jsR.y -= 64;
+			
 			game.tickGame(delta);
 			H.clampCam(camera, 16 * 4, 16 * 4, (int) (GameSystem.voxes.length * 16) - 16 * 4,
 					(int) (GameSystem.voxes[0].length * 16) - 16 * 4);
@@ -87,6 +136,8 @@ public class PlayDevice extends InputAdapter implements Screen {
 			GameSystem.player.mining = true;
 			renderR = true;
 			rPointer = pointer;
+			rX = screenX;
+			rY = screenY;
 		}
 		jsR.x -= 64;
 		jsR.y -= 64;
@@ -107,6 +158,8 @@ public class PlayDevice extends InputAdapter implements Screen {
 			}
 			renderL = true;
 			lPointer = pointer;
+			lX = screenX;
+			lY = screenY;
 		}
 		jsL.x -= 64;
 		jsL.y -= 64;
@@ -116,56 +169,27 @@ public class PlayDevice extends InputAdapter implements Screen {
 	
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
-		jsL = new H.Point(64 * Title.scale, 64 * Title.scale);                                   
-		jsR = new H.Point(Gdx.graphics.getWidth() - 64 * Title.scale - 64 * 2, 64 * Title.scale);
-		
-		jsL.x += 64;
-		jsL.y += 64;
-		jsR.x += 64;
-		jsR.y += 64;
-		
 		if (pointer == rPointer) {
-			int x = screenX;
-			int y = Gdx.graphics.getHeight() - screenY;
-			System.out.println("x=" + x + " y=" + y);
-			if (H.getDist(x, y, jsR.x, jsR.y) <= 128) {
-				GameSystem.player.direction = H.posToDir(jsR.x, jsR.y, x, y);
-				renderR = true;
-				rPointer = pointer;
-			}
+			rX = screenX;
+			rY = screenY;
 		}
 		if (pointer == lPointer) {
-			int x = screenX;
-			int y = Gdx.graphics.getHeight() - screenY;
-			if (H.getDist(x, y, jsL.x, jsL.y) <= 128) {
-				if (y > jsL.y + 32) {
-					if (GameSystem.player.touchingGround) {
-						GameSystem.player.velY += GameSystem.player.jumpHeight;
-					}
-					GameSystem.player.touchingGround = false;
-				}
-				if (x > jsL.x) {
-					GameSystem.player.velX = Math.abs(x - jsL.x);
-				} else if (x < jsL.x) {
-					GameSystem.player.velX = -Math.abs(x - jsL.x);
-				}
-				renderL = true;
-				lPointer = pointer;
-			}
+			lX = screenX;
+			lY = screenY;
 		}
-		
-		jsL.x -= 64;
-		jsL.y -= 64;
-		jsR.x -= 64;
-		jsR.y -= 64;
-		
 		return true;
 	}
 	
 	@Override
 	public boolean touchUp(int x, int y, int pointer, int button) {
-		if (pointer == lPointer) renderL = false;
-		if (pointer == rPointer) renderR = false;
+		if (pointer == lPointer) {
+			renderL = false;
+			lPointer = -1;
+		}
+		if (pointer == rPointer) {
+			renderR = false;
+			rPointer = -1;
+		}
 		return false;
 	}
 
