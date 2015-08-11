@@ -79,13 +79,16 @@ public class GameSystem {
 				}
 				if (voxes[x][y] == null && x * 16 - xc > -16 && x * 16 - xc < widthc && y * 16 - yc > -16
 						&& y * 16 - yc < heightc && true) {
-					if (y < voxes[0].length / 2 - 50) {
+					if (y < voxes[0].length / 2 - 50 && y > voxes[0].length / 2 - 100) {
 						TextureRegion tex = new TextureRegion(cellSheet, 0, 16, 16, 16);
 						batch.draw(tex, x * 16, y * 16, 0, 0, 16, 16, 1, 1, 0);
 					}
 				}
 			}
 		}
+		
+		// Render Player
+		player.render(batch);
 		
 		// Render lighting
 		for (int x = 0; x < voxes.length; x++) {
@@ -101,18 +104,15 @@ public class GameSystem {
 						lighting[x][y] += 255f;
 					}
 					if (GameSystem.voxIsCovered(voxes[x][y], x, y) && voxes[x][y] == null && y >= voxes[0].length / 2 - 50) {
-						lighting[x][y] += 255f;
+						lighting[x][y] += 255f * 0.5f;
 					}
 					if (lighting[x][y] > 255) lighting[x][y] = 255;
 					if (lighting[x][y] < 0) lighting[x][y] = 0;
-					TextureRegion grad = new TextureRegion(cellSheet, (int)((lighting[x][y] / 255f) * 16) * 16, 12*16, 16, 16);
-					batch.draw(grad, x * 16, y * 16, 0, 0, 16, 16, 1, 1, 0);
+					TextureRegion grad = new TextureRegion(cellSheet, (int)((lighting[x][y] / 255f) * 16) * 16, 12*16, 1, 1);
+					batch.draw(grad, x * 16, y * 16, 0, 0, 1, 1, 16, 16, 0);
 				}
 			}
 		}
-		
-		// Render Player
-		player.render(batch);
 
 	}
 

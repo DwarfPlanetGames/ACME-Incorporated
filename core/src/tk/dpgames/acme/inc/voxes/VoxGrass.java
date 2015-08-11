@@ -4,7 +4,7 @@ public class VoxGrass extends Vox {
 
 	public VoxGrass() {
 		super(16*1, 0);
-		temper = 1.1f;
+		temper = 0.01f;
 	}
 
 }

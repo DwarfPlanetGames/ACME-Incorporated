@@ -1,5 +1,7 @@
 package tk.dpgames.acme.inc.voxes;
 
+import tk.dpgames.acme.inc.game.GameSystem;
+
 public abstract class Vox {
 	
 	String data = "";
@@ -23,9 +25,13 @@ public abstract class Vox {
 	
 	public void tick(){};
 	
+	public void destroy(){}
+	
 	public void mine(int x, int y,float delta) {
-		health -= temper*delta;
+		System.out.println("Mining");
+		health -= delta / temper;
 		if (health <= 0) {
+			GameSystem.voxes[x][y] = null;
 		}
 	}
 	

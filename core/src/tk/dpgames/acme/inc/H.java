@@ -5,6 +5,10 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Intersector;
+import com.badlogic.gdx.math.Polygon;
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class H {
 
@@ -56,11 +60,12 @@ public class H {
 	public static float getDist(float x1, float y1, float x2, float y2) {
 		return (float) (Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)));
 	}
-	
+
 	public static int pointers() {
 		int activeTouch = 0;
 		for (int i = 0; i < 20; i++) {
-			if (Gdx.input.isTouched(i)) activeTouch++;
+			if (Gdx.input.isTouched(i))
+				activeTouch++;
 		}
 		return activeTouch;
 	}
@@ -73,6 +78,44 @@ public class H {
 			this.x = x;
 			this.y = y;
 		}
+	}
+
+	public static class Segment {
+		public Vector2 b;
+		public Vector2 e;
+
+		public Segment(Vector2 b, Vector2 e) {
+			this.b = b;
+			this.e = e;
+		}
+	}
+
+	public static final class Overlapper {
+
+		public static boolean intersectRectSeg(H.Segment segment, Rectangle rect) {
+			if (Intersector.intersectSegments(segment.b, segment.e, new Vector2(rect.x, rect.y), new Vector2(rect.x, rect.y
+					+ rect.height), null)) {
+				// check left
+				return true;
+			}
+			if (Intersector.intersectSegments(segment.b, segment.e, new Vector2(rect.x + rect.width, rect.y), new Vector2(
+					rect.x + rect.width, rect.y + rect.height), null)) {
+				// check right
+				return true;
+			}
+			if (Intersector.intersectSegments(segment.b, segment.e, new Vector2(rect.x, rect.y), new Vector2(rect.x
+					+ rect.width, rect.y), null)) {
+				// check bottom
+				return true;
+			}
+			if (Intersector.intersectSegments(segment.b, segment.e, new Vector2(rect.x, rect.y + rect.height), new Vector2(
+					rect.x + rect.width, rect.y + rect.height), null)) {
+				// check top
+				return true;
+			}
+			return false;
+		}
+
 	}
 
 }

@@ -1,11 +1,16 @@
 package tk.dpgames.acme.inc.game;
 
+import java.util.LinkedList;
+
+import tk.dpgames.acme.inc.H;
 import tk.dpgames.acme.inc.voxes.Vox;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.math.Vector2;
 
 public class Player {
 	public float x;
@@ -19,9 +24,10 @@ public class Player {
 	public float texAnim = 0;
 	public boolean touchingGround = false;
 	public boolean mining = false;
-	public float jumpHeight = 350f;
+	public float jumpHeight = 200f;
 	public float jumpCont = 4f;
 	public Light light;
+	public int mineDistance = 8;
 
 	private Texture tex = new Texture("player_anim.png");
 
@@ -53,7 +59,10 @@ public class Player {
 		y += velY * delta;
 		x += velX * delta;
 		light.x = x;
-		light.y = y;
+		light.y = y + height / 4;
+		if (mining) {
+			mine();
+		}
 	}
 
 	public void render(SpriteBatch batch) {
@@ -73,6 +82,64 @@ public class Player {
 		batch.draw(reg, x - 1, y - 1, w, h);
 		if (mining)
 			batch.draw(tex, x, y, (float) Math.cos(direction) * 64, (float) Math.sin(direction) * 64);
+	}
+
+	public void mine() {
+		float delta = Gdx.graphics.getDeltaTime();
+
+		// Player location
+		System.out.println("Player Location");
+		int xl = (int) (x);
+		int yl = (int) (y + height / 2 - 8);
+
+		// List of voxes touching ray
+		System.out.println("List voxes");
+		LinkedList<Vector2> points = new LinkedList<Vector2>();
+
+		// Sift voxes
+		System.out.println("Sift Voxes");
+		for (int x = xl / 16 - mineDistance; x < xl / 16 + mineDistance; x++) {
+			for (int y = yl / 16 - mineDistance; y < yl / 16 + mineDistance; y++) {
+				if (GameSystem.voxes[x][y] != null) {
+					// Vox location
+					int xr = x * 16;
+					int yr = y * 16;
+
+					// Calculate rectangle
+					Rectangle r = new Rectangle(xr, yr, 16, 16);
+
+					// Calculate intersection
+					for (int i = 0; i < mineDistance * 2; i++) {
+						if (r.contains((float) (xl + Math.cos(direction) * i * 8), (float) (xl + Math.sin(direction) * i * 8))) {
+							Vector2 a = new Vector2(x, y);
+							if (!points.contains(a)) {
+								points.add(a);
+							}
+						}
+					}
+				}
+			}
+		}
+		System.out.println("Check point size");
+		if (points.size() <= 0) {
+			System.out.println("Smaller tan 1. quitting");
+			return;
+		}
+
+		System.out.println("getting closest");
+		Vector2 closest = new Vector2(points.getFirst());
+		for (int i = 0; i < points.size(); i++) {
+			if (H.getDist(xl, yl, points.get(i).x, points.get(i).y) < H.getDist(xl, yl, closest.x, closest.y)) {
+				closest = new Vector2(points.get(i).x, points.get(i).y);
+			}
+		}
+		System.out.println("checking canMine");
+		if (GameSystem.voxes[(int) closest.x][(int) closest.y].canMine) {
+			System.out.println("starting mine");
+			GameSystem.voxes[(int) closest.x][(int) closest.y].mine((int) closest.x, (int) closest.y, delta);
+		} else {
+			System.out.println("cannot mine");
+		}
 	}
 
 	public void collide(float delta) {

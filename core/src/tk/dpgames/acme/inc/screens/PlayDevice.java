@@ -189,6 +189,7 @@ public class PlayDevice extends InputAdapter implements Screen {
 		if (pointer == rPointer) {
 			renderR = false;
 			rPointer = -1;
+			GameSystem.player.mining = false;
 		}
 		return false;
 	}
