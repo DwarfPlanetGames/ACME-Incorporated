@@ -9,6 +9,7 @@ import tk.dpgames.acme.inc.voxes.Vox;
 import tk.dpgames.acme.inc.voxes.VoxDirt;
 import tk.dpgames.acme.inc.voxes.VoxGrass;
 import tk.dpgames.acme.inc.voxes.VoxRock;
+import tk.dpgames.acme.inc.voxes.VoxSand;
 import tk.dpgames.acme.inc.voxes.VoxWater;
 
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -199,10 +200,18 @@ public class GameSystem {
 		player.tick(delta);
 		if (tickTime >= 1f / 3f) {
 			tickTime -= 1f / 3f;
+			float xc = camera.position.x;
+			float yc = camera.position.y;
+			float widthc = camera.viewportWidth + 64;
+			float heightc = camera.viewportHeight + 64;
+			xc -= widthc / 2f;
+			yc -= heightc / 2f;
 			for (int x = 0; x < voxes.length; x++) {
 				for (int y = 0; y < voxes[0].length; y++) {
-					if (voxes[x][y] != null)
-						voxes[x][y].tick(x,y);
+					if (x * 16 - xc > -16 && x * 16 - xc < widthc && y * 16 - yc > -16 && y * 16 - yc < heightc) {
+						if (voxes[x][y] != null)
+							voxes[x][y].tick(x,y);
+					}
 				}
 			}
 		}
@@ -259,13 +268,9 @@ public class GameSystem {
 							if (r.nextInt(3) == 0)
 								voxes[x][y] = new VoxDirt();
 							else
-								voxes[x][y] = new VoxRock();
+								voxes[x][y] = new VoxSand();
 					}
 				}
-			}
-			// Add water
-			for (int x = voxes.length / 2 - 59; x < voxes.length / 2 + 59; x++) {
-				voxes[x][voxes[0].length / 2 + 10] = new VoxWater(10);
 			}
 			break;
 		}

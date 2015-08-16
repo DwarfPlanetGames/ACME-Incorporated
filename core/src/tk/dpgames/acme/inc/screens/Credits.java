@@ -20,6 +20,7 @@ public class Credits implements Screen {
 		"","","","","",
 		"Programmers",
 		"Brandon Dyer",
+		"Ian Green",
 		"Austin White",
 		"","","","","",
 		"Music",
