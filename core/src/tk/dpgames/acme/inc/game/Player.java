@@ -24,19 +24,32 @@ public class Player {
 	public float texAnim = 0;
 	public boolean touchingGround = false;
 	public boolean mining = false;
+	public PointMine miningByPoint = new PointMine(false, 0, 0);
 	public float jumpHeight = 200f;
 	public float jumpCont = 4f;
 	public Light light;
 	public int mineDistance = 8;
+	public float miningPower = 500;
 
 	private Texture tex = new Texture("player_anim.png");
 
 	public Player() {
 		x = (GameSystem.voxes.length / 2) * 16;
-		y = (GameSystem.voxes[0].length / 2) * 16 + 16 * 5;
+		y = (GameSystem.voxes[0].length / 2) * 16 + 16 * 10;
 		voxX = (GameSystem.voxes.length / 2);
 		voxY = (GameSystem.voxes[0].length / 2) + 5;
-		light = new Light(400, x, y);
+		light = new Light(550, x, y);
+	}
+
+	public class PointMine {
+		public boolean mining;
+		public int x, y;
+
+		public PointMine(boolean mining, int x, int y) {
+			this.mining = mining;
+			this.x = x;
+			this.y = y;
+		}
 	}
 
 	public void tick(float delta) {
@@ -51,10 +64,23 @@ public class Player {
 			velX = (width - 1) / delta;
 		if (velX * delta < -width + 1)
 			velX = (-width + 1) / delta;
-		collide(delta);
-		if (touchingGround) {
-			velX *= 0.5;
+		if (y < 16 * 4) {
+			y = 16 * 4;
+			velY = 0;
 		}
+		if (y > GameSystem.voxes[0].length * 16 - 16 * 4) {
+			y = GameSystem.voxes[0].length * 16 - 16 * 4;
+			velY *= -1;
+		}
+		if (x < 16 * 4) {
+			x = 16 * 4;
+			velX *= -1;
+		}
+		if (x > GameSystem.voxes.length * 16 - 16 * 4) {
+			x = GameSystem.voxes.length * 16 - 16 * 4;
+			velX *= -1;
+		}
+		collide(delta);
 		texAnim += Math.abs(velX * delta * 0.1f);
 		y += velY * delta;
 		x += velX * delta;
@@ -62,6 +88,11 @@ public class Player {
 		light.y = y + height / 4;
 		if (mining) {
 			mine();
+		} else if (miningByPoint.mining) {
+			mineByPoint();
+		}
+		if (touchingGround) {
+			velX *= 0.5;
 		}
 	}
 
@@ -84,6 +115,8 @@ public class Player {
 			batch.draw(tex, x, y, (float) Math.cos(direction) * 64, (float) Math.sin(direction) * 64);
 	}
 
+	// public void mine() : currently broken
+	// TODO fix public void mine()
 	public void mine() {
 		float delta = Gdx.graphics.getDeltaTime();
 
@@ -98,9 +131,14 @@ public class Player {
 
 		// Sift voxes
 		System.out.println("Sift Voxes");
-		for (int x = xl / 16 - mineDistance; x < xl / 16 + mineDistance; x++) {
-			for (int y = yl / 16 - mineDistance; y < yl / 16 + mineDistance; y++) {
-				if (GameSystem.voxes[x][y] != null) {
+		Rectangle cam = GameSystem.getCameraRect();
+		int cx = (int) cam.x / 16;
+		int cy = (int) cam.y / 16;
+		int cxe = cx + (int) cam.width / 16;
+		int cye = cy + (int) cam.height / 16;
+		for (int x = cx; x < cxe; x++) {
+			for (int y = cx; y < cye; y++) {
+				if (GameSystem.voxes[x][y] != null && H.getDist(this.x, this.y, x * 16, y * 16) <= mineDistance * 16) {
 					// Vox location
 					int xr = x * 16;
 					int yr = y * 16;
@@ -110,7 +148,8 @@ public class Player {
 
 					// Calculate intersection
 					for (int i = 0; i < mineDistance * 2; i++) {
-						if (r.contains((float) (xl + Math.cos(direction) * i * 8), (float) (xl + Math.sin(direction) * i * 8))) {
+						if (r.contains((float) (this.x + Math.cos(direction) * i * 8), (float) (this.y + Math.sin(direction)
+								* i * 8))) {
 							Vector2 a = new Vector2(x, y);
 							if (!points.contains(a)) {
 								points.add(a);
@@ -136,10 +175,18 @@ public class Player {
 		System.out.println("checking canMine");
 		if (GameSystem.voxes[(int) closest.x][(int) closest.y].canMine) {
 			System.out.println("starting mine");
-			GameSystem.voxes[(int) closest.x][(int) closest.y].mine((int) closest.x, (int) closest.y, delta);
+			GameSystem.voxes[(int) closest.x][(int) closest.y].mine((int) closest.x, (int) closest.y, delta, miningPower);
 		} else {
 			System.out.println("cannot mine");
 		}
+	}
+
+	public void mineByPoint() {
+		int voxX = miningByPoint.x / 16;
+		int voxY = miningByPoint.y / 16;
+		if (GameSystem.voxes[voxX][voxY] == null)
+			return;
+		GameSystem.voxes[voxX][voxY].mine(voxX, voxY, Gdx.graphics.getDeltaTime(), miningPower);
 	}
 
 	public void collide(float delta) {

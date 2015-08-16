@@ -2,6 +2,7 @@ package tk.dpgames.acme.inc.screens;
 
 import tk.dpgames.acme.inc.H;
 import tk.dpgames.acme.inc.game.GameSystem;
+import tk.dpgames.acme.inc.game.GameSystem.LandType;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
@@ -26,15 +27,17 @@ public class PlayDevice extends InputAdapter implements Screen {
 	private H.Point jsR = new H.Point(Gdx.graphics.getWidth() - 64 * Title.scale - 64 * 2, 64 * Title.scale);
 	private int rPointer = -1;
 	private int lPointer = -1;
-	private int rX = 0, rY = 0, lX = 0, lY = 0;
+	private int mPointer = -1;
+	private int rX = 0, rY = 0, lX = 0, lY = 0, mX = 0, mY = 0;
 
 	@Override
 	public void show() {
-		game = new GameSystem();
 		hudOpen = true;
 		gameBatch = new SpriteBatch();
 		hudBatch = new SpriteBatch();
 		camera = new OrthographicCamera(Gdx.graphics.getWidth() / Title.scale, Gdx.graphics.getHeight() / Title.scale);
+		game = new GameSystem(camera,512*2,256);
+		GameSystem.createWorld(LandType.flat, true,System.currentTimeMillis());
 		game.paused = false;
 		Gdx.input.setInputProcessor(this);
 	}
@@ -57,10 +60,10 @@ public class PlayDevice extends InputAdapter implements Screen {
 				int y = Gdx.graphics.getHeight() - screenY;
 				GameSystem.player.direction = H.posToDir(jsR.x, jsR.y, x, y);
 				renderR = true;
-			}
-			screenX = lX;
-			screenY = lY;
+			} 
 			if (lPointer != -1) {
+				screenX = lX;
+				screenY = lY;
 				int x = screenX;
 				int y = Gdx.graphics.getHeight() - screenY;
 				if (H.getDist(x, y, jsL.x, jsL.y) >= 128) {
@@ -84,6 +87,15 @@ public class PlayDevice extends InputAdapter implements Screen {
 				}
 				renderL = true;
 			}
+			if (mPointer != -1) {
+				screenX = mX;
+				screenY = mY;
+				int x = screenX;
+				int y = Gdx.graphics.getHeight() - screenY;
+				GameSystem.player.miningByPoint.mining = true;
+				GameSystem.player.miningByPoint.x = (int)(((x - Gdx.graphics.getWidth() / 2f) / (Gdx.graphics.getWidth() / 2f)) * camera.viewportWidth / 2f + camera.position.x);
+				GameSystem.player.miningByPoint.y = (int)(((y - Gdx.graphics.getHeight() / 2f) / (Gdx.graphics.getHeight() / 2f)) * camera.viewportHeight / 2f + camera.position.y);
+			}
 			
 			jsL.x -= 64;
 			jsL.y -= 64;
@@ -91,13 +103,13 @@ public class PlayDevice extends InputAdapter implements Screen {
 			jsR.y -= 64;
 			
 			game.tickGame(delta);
-			H.clampCam(camera, 16 * 4, 16 * 4, (int) (GameSystem.voxes.length * 16) - 16 * 4,
-					(int) (GameSystem.voxes[0].length * 16) - 16 * 4);
 		}
 		float t = 0.5f + (float) (Math.sin(GameSystem.dayTime) / 2f);
 		H.clear(0, t, t);
 		camera.position.x = GameSystem.player.x;
 		camera.position.y = GameSystem.player.y;
+		H.clampCam(camera, 16 * 4, 16 * 4, (int) (GameSystem.voxes.length * 16) - 16 * 4,
+				(int) (GameSystem.voxes[0].length * 16) - 16 * 4);
 		gameBatch.begin();
 		game.renderGame(gameBatch, camera);
 		gameBatch.end();
@@ -138,12 +150,9 @@ public class PlayDevice extends InputAdapter implements Screen {
 			rPointer = pointer;
 			rX = screenX;
 			rY = screenY;
+			return true;
 		}
-		jsR.x -= 64;
-		jsR.y -= 64;
 		
-		x = screenX;
-		y = Gdx.graphics.getHeight() - screenY;
 		if (H.getDist(x, y, jsL.x, jsL.y) <= 128) {
 			if (y > jsL.y + 32) {
 				if (GameSystem.player.touchingGround) {
@@ -160,9 +169,20 @@ public class PlayDevice extends InputAdapter implements Screen {
 			lPointer = pointer;
 			lX = screenX;
 			lY = screenY;
+			return true;
 		}
+		jsR.x -= 64;
+		jsR.y -= 64;
 		jsL.x -= 64;
 		jsL.y -= 64;
+		
+		mPointer = pointer;
+		mX = screenX;
+		mY = screenY;
+		
+		GameSystem.player.miningByPoint.mining = true;
+		GameSystem.player.miningByPoint.x = (int)(((x - Gdx.graphics.getWidth() / 2f) / (Gdx.graphics.getWidth() / 2f)) * camera.viewportWidth / 2f + camera.position.x);
+		GameSystem.player.miningByPoint.y = (int)(((y - Gdx.graphics.getHeight() / 2f) / (Gdx.graphics.getHeight() / 2f)) * camera.viewportHeight / 2f + camera.position.y);
 		
 		return true;
 	}
@@ -177,6 +197,10 @@ public class PlayDevice extends InputAdapter implements Screen {
 			lX = screenX;
 			lY = screenY;
 		}
+		if (pointer == mPointer) {
+			mX = screenX;
+			mY = screenY;
+		}
 		return true;
 	}
 	
@@ -190,6 +214,10 @@ public class PlayDevice extends InputAdapter implements Screen {
 			renderR = false;
 			rPointer = -1;
 			GameSystem.player.mining = false;
+		}
+		if (pointer == mPointer) {
+			mPointer = -1;
+			GameSystem.player.miningByPoint.mining = false;
 		}
 		return false;
 	}
