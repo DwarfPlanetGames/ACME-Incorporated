@@ -9,15 +9,18 @@ public abstract class Item {
 	public TextureRegion tex;
 	public float miningPower = 0;
 	public float hitPower = 0;
+	public boolean stackable;
+	public String id = "item";
 
-	public Item(TextureRegion tex) {
+	public Item(TextureRegion tex, String id) {
 		this.tex = tex;
 		tex.setRegionWidth(16);
 		tex.setRegionHeight(16);
+		this.id = id;
 		run();
 	}
 	
-	void run() {
+	protected void run() {
 		
 	}
 	

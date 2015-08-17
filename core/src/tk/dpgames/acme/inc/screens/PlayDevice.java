@@ -3,6 +3,7 @@ package tk.dpgames.acme.inc.screens;
 import tk.dpgames.acme.inc.H;
 import tk.dpgames.acme.inc.game.GameSystem;
 import tk.dpgames.acme.inc.game.GameSystem.LandType;
+import tk.dpgames.acme.inc.game.HUD;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.InputAdapter;
@@ -40,6 +41,11 @@ public class PlayDevice extends InputAdapter implements Screen {
 		GameSystem.createWorld(LandType.flat, true,System.currentTimeMillis());
 		game.paused = false;
 		Gdx.input.setInputProcessor(this);
+		GameSystem.hud = new HUD(HUD.Device.mobile);
+		Title.music.stop();
+		GameSystem.overworldMusic.setVolume(0.4f);
+		GameSystem.overworldMusic.setLooping(true);
+		GameSystem.overworldMusic.play();
 	}
 
 	@Override
@@ -80,11 +86,8 @@ public class PlayDevice extends InputAdapter implements Screen {
 					}
 					GameSystem.player.touchingGround = false;
 				}
-				if (x > jsL.x) {
-					GameSystem.player.velX = Math.abs(x - jsL.x);
-				} else if (x < jsL.x) {
-					GameSystem.player.velX = -Math.abs(x - jsL.x);
-				}
+				GameSystem.player.velX = (x - jsL.x) / 4f;
+				
 				renderL = true;
 			}
 			if (mPointer != -1) {
@@ -119,7 +122,7 @@ public class PlayDevice extends InputAdapter implements Screen {
 		gameBatch.setProjectionMatrix(camera.combined);
 		hudBatch.begin();
 		if (hudOpen) {
-			game.renderHud(delta, hudBatch);
+			game.renderHud(hudBatch);
 		}
 		if (renderL)
 			hudBatch.draw(joystick, jsL.x, jsL.y, 64 * 2, 64 * 2);

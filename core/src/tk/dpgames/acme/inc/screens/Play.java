@@ -1,5 +1,7 @@
 package tk.dpgames.acme.inc.screens;
 
+import tk.dpgames.acme.inc.game.GameSystem;
+
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Screen;

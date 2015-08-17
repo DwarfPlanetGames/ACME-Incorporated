@@ -9,12 +9,13 @@ public abstract class Vox {
 	
 	public static final Texture outline = new Texture("vox_outline.png");
 	
-	protected String data = "";
+	public String data = "";
 	public int texX = 0, texY = 0;
 	public boolean canMine = true;
 	public boolean canCollide = true;
 	public float temper = 1f; // 1 would be dirt, 2 would be rock
 	public float health = 10f;
+	protected int x,y;
 	
 	public Vox(int texX, int texY) {
 		this.texX = texX;
@@ -36,22 +37,28 @@ public abstract class Vox {
 	
 	public void placed(){};
 	
-	public void tick(int x, int y){};
+	public void tick(int x, int y){
+		this.x = x;
+		this.y = y;
+	};
 	
 	public void destroy(){}
 	
 	public void render(SpriteBatch batch, int x, int y){}
 	
-	public void mine(int x, int y,float delta, float power) {
+	public boolean mine(int x, int y,float delta, float power) {
 		if (!canMine) {
-			return;
+			return false;
 		}
 		System.out.println("Mining; Health: " + health);
 		health -= delta / (temper / power);
 		if (health <= 0) {
 			GameSystem.voxes[x][y] = null;
 			mined();
+			destroy();
+			return true;
 		}
+		return false;
 	}
 	
 }

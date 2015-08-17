@@ -7,11 +7,12 @@ import tk.dpgames.acme.inc.H;
 import tk.dpgames.acme.inc.screens.Title;
 import tk.dpgames.acme.inc.voxes.Vox;
 import tk.dpgames.acme.inc.voxes.VoxDirt;
+import tk.dpgames.acme.inc.voxes.VoxFlame;
 import tk.dpgames.acme.inc.voxes.VoxGrass;
 import tk.dpgames.acme.inc.voxes.VoxRock;
-import tk.dpgames.acme.inc.voxes.VoxSand;
-import tk.dpgames.acme.inc.voxes.VoxWater;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -38,6 +39,8 @@ public class GameSystem {
 	public static Player player;
 	public static float dayTime = 0;
 	public static int sunlight = 0;
+	public static HUD hud;
+	public static Music overworldMusic = Gdx.audio.newMusic(Gdx.files.internal("overworld.mp3"));
 
 	public static OrthographicCamera camera;
 
@@ -94,12 +97,13 @@ public class GameSystem {
 				if (x * 16 - xc > -16 && x * 16 - xc < widthc && y * 16 - yc > -16 && y * 16 - yc < heightc) {
 					lighting[x][y] = 0;
 					for (int i = 0; i < lights.size(); i++) {
-						if (voxes[x][y] != null)
-							lighting[x][y] += lights.get(i).value
-									/ (H.getDist(lights.get(i).x, lights.get(i).y, x * 16, y * 16) / 16f + 1f);
-						else
-							lighting[x][y] += lights.get(i).value
-									/ (H.getDist(lights.get(i).x, lights.get(i).y, x * 16, y * 16) / 17f + 1f);
+						if (lights.get(i).x - xc > -16 && lights.get(i).x - xc < widthc && lights.get(i).y - yc > -16 && lights.get(i).y - yc < heightc)
+							if (voxes[x][y] != null)
+								lighting[x][y] += lights.get(i).value
+										/ (H.getDist(lights.get(i).x, lights.get(i).y, x * 16, y * 16) / 16f + 1f);
+							else
+								lighting[x][y] += lights.get(i).value
+										/ (H.getDist(lights.get(i).x, lights.get(i).y, x * 16, y * 16) / 17f + 1f);
 					}
 					if (!GameSystem.voxIsCovered(voxes[x][y], x, y)) {
 						lighting[x][y] += GameSystem.sunlight;
@@ -116,15 +120,15 @@ public class GameSystem {
 						lighting[x][y] = 0;
 					if ((int) ((lighting[x][y] / 255f) * 16) > 0) {
 						if (voxes[x][y] != null) {
+							if (y < voxes[0].length / 2 - 10 && y > voxes[0].length / 2 - 50 && !voxes[x][y].canCollide) {
+								TextureRegion tex = new TextureRegion(cellSheet, 0, 16, 16, 16);
+								batch.draw(tex, x * 16, y * 16, 0, 0, 16, 16, 1, 1, 0);
+							}
 							if (!voxes[x][y].getData("render")) {
 								TextureRegion tex = new TextureRegion(cellSheet, voxes[x][y].texX, voxes[x][y].texY, 16, 16);
 								batch.draw(tex, x * 16, y * 16, 0, 0, 16, 16, 1, 1, 0);
 							} else {
 								voxes[x][y].render(batch, x, y);
-							}
-							if (y < voxes[0].length / 2 - 10 && y > voxes[0].length / 2 - 50 && !voxes[x][y].canCollide) {
-								TextureRegion tex = new TextureRegion(cellSheet, 0, 16, 16, 16);
-								batch.draw(tex, x * 16, y * 16, 0, 0, 16, 16, 1, 1, 0);
 							}
 						}
 						if (voxes[x][y] == null) {
@@ -217,8 +221,8 @@ public class GameSystem {
 		}
 	}
 
-	public void renderHud(float delta, SpriteBatch batch) {
-
+	public void renderHud(SpriteBatch batch) {
+		hud.render(batch);
 	}
 
 	public static void createWorld(LandType type, boolean caves, long seed) {
@@ -268,7 +272,7 @@ public class GameSystem {
 							if (r.nextInt(3) == 0)
 								voxes[x][y] = new VoxDirt();
 							else
-								voxes[x][y] = new VoxSand();
+								voxes[x][y] = new VoxFlame(x,y);
 					}
 				}
 			}

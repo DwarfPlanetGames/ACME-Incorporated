@@ -15,22 +15,29 @@ import com.badlogic.gdx.math.Vector2;
 public class Player {
 	public float x;
 	public float y;
+	public float px;
+	public float py;
+	public Light light;
+	public int voxX, voxY;
 	public float width = 12;
 	public float height = 24;
-	public float direction = 0;
-	public float velX = 0, velY = 0;
-	public float gravity = 10f;
-	public int voxX, voxY;
 	public float texAnim = 0;
-	public boolean touchingGround = false;
-	public boolean mining = false;
-	public PointMine miningByPoint = new PointMine(false, 0, 0);
-	public float jumpHeight = 200f;
+	public float gravity = 2f;
+	public float tickTime = 0;
+	public int maxHealth = 10;
+	public float health = 10f;
+	public Inventory inventory;
+	public float direction = 0;
 	public float jumpCont = 4f;
-	public Light light;
 	public int mineDistance = 8;
+	public boolean mining = false;
+	public float jumpHeight = 40f;
+	public String touchData = ":";
 	public float miningPower = 500;
-
+	public float velX = 0, velY = 0;
+	public boolean touchingGround = false;
+	public PointMine miningByPoint = new PointMine(false, 0, 0);
+	
 	private Texture tex = new Texture("player_anim.png");
 
 	public Player() {
@@ -53,17 +60,25 @@ public class Player {
 	}
 
 	public void tick(float delta) {
+		tickTime += delta;
+		if (tickTime > 1f/30f) {
+			doPhysics();
+			tickTime -= 1f/30f;
+		}
+	}
+	
+	public void doPhysics() {
 		velY -= gravity;
 		velX *= 0.9;
 		velY *= 0.9;
-		if (velY * delta > height - 1)
-			velY = (height - 1) / delta;
-		if (velY * delta < -height + 1)
-			velY = (-height + 1) / delta;
-		if (velX * delta > width - 1)
-			velX = (width - 1) / delta;
-		if (velX * delta < -width + 1)
-			velX = (-width + 1) / delta;
+		if (velY > 15)
+			velY = (15);
+		if (velY < -15)
+			velY = (-15);
+		if (velX > 15)
+			velX = (15);
+		if (velX < -15)
+			velX = (-15);
 		if (y < 16 * 4) {
 			y = 16 * 4;
 			velY = 0;
@@ -80,19 +95,21 @@ public class Player {
 			x = GameSystem.voxes.length * 16 - 16 * 4;
 			velX *= -1;
 		}
-		collide(delta);
-		texAnim += Math.abs(velX * delta * 0.1f);
-		y += velY * delta;
-		x += velX * delta;
-		light.x = x;
+		px = x;
+		py = y;
+		y += velY;
+		x += velX;
+		if (touchingGround) {
+			velX *= 0.5;
+		}
+		collide(1f);
+		texAnim += Math.abs(velX * 0.1f);
+		light.x = x + width / 2f - 8;
 		light.y = y + height / 4;
 		if (mining) {
 			mine();
 		} else if (miningByPoint.mining) {
 			mineByPoint();
-		}
-		if (touchingGround) {
-			velX *= 0.5;
 		}
 	}
 
@@ -186,11 +203,13 @@ public class Player {
 		int voxY = miningByPoint.y / 16;
 		if (GameSystem.voxes[voxX][voxY] == null)
 			return;
-		GameSystem.voxes[voxX][voxY].mine(voxX, voxY, Gdx.graphics.getDeltaTime(), miningPower);
+		if (GameSystem.voxes[voxX][voxY].mine(voxX, voxY, Gdx.graphics.getDeltaTime(), miningPower)) {
+			
+		}
 	}
-
-	public void collide(float delta) {
-		touchingGround = false;
+	
+	private boolean isColliding() {
+		touchData = "";
 		for (int x = (int) this.x / 16 - 8; x < (int) this.x / 16 + 8; x++) {
 			if (x > GameSystem.voxes.length)
 				continue;
@@ -207,7 +226,10 @@ public class Player {
 				if (vox != null) {
 					if (vox.canCollide) {
 						Rectangle col = new Rectangle(x * 16, y * 16, 16, 16);
-						if (col.overlaps(getBounds(Side.btm, delta))) {
+						if (col.overlaps(getBounds(0))) {
+							return true;
+						}
+						/*if (col.overlaps(getBounds(Side.btm, delta))) {
 							velY = 0;
 							this.y = y * 16 + 16;
 							touchingGround = true;
@@ -223,39 +245,90 @@ public class Player {
 						if (col.overlaps(getBounds(Side.lft, delta))) {
 							velX = 0;
 							this.x = x * 16 + 16;
+						}*/
+					} else {
+						Rectangle col = new Rectangle(x * 16, y * 16, 16, 16);
+						if (col.overlaps(getBounds(0))) {
+							touchData = touchData + ":" + vox.data + ":";
 						}
 					}
 				}
 			}
 		}
+		return false;
 	}
 
-	public Rectangle getBounds(Side side, float delta) {
+	public void collide(float delta) {
+		touchingGround = false;
+		if (isColliding()) {
+			int qx = (int)(px/16f) * 16;
+			int qy = (int)(py/16f) * 16;
+			float ppx = px;
+			this.x = px;
+			this.y = py;
+			this.x += velX;
+			if (isColliding()) {
+				if (velX > 0) {
+					px = qx + 16 - width;
+				} else {
+					px = qx;
+				}
+				velX = 0;
+			}
+			this.x = ppx;
+			this.y += velY;
+			if (isColliding()) {
+				if (velY > 0) {
+					py = qy + 32 - height;
+				} else {
+					py = qy;
+				}
+				velY = 0;
+				touchingGround = true;
+			}
+			this.x = px;
+			this.y = py;
+			this.x += velX;
+			this.y += velY;
+		}
+	}
+
+	public Rectangle getBounds(float delta) {
 		Rectangle r;
-		switch (side) {
+		r = new Rectangle(x, y, width, height);
+		return r;
+		/*switch (side) {
 		case top:
-			r = new Rectangle(x + 2, y + height + velY * delta, width - 4, -velY * delta);
-			if (r.height < 0)
+			r = new Rectangle(x + 2, y + height / 2f, width - 4, height / 2f);
+			if (r.height < 0) {
 				r.height = 0;
+				r.y = y + height;
+			}
 			return r;
 		case btm:
-			r = new Rectangle(x + 2, y + velY * delta, width - 4, -velY * delta);
-			if (r.height > 0)
+			r = new Rectangle(x + 2, y, width - 4, height / 2f);
+			if (r.height < 0) {
 				r.height = 0;
+				r.y = y;
+			}
 			return r;
 		case lft:
-			r = new Rectangle(x + velX * delta, y + 2, -velX * delta, height - 4);
-			if (r.width > 0)
+			r = new Rectangle(x, y + 2, width / 2, height - 4);
+			if (r.width < 0) {
 				r.width = 0;
+				r.x = x;
+			}
 			return r;
 		case rit:
-			r = new Rectangle(x + width + velX * delta, y + 2, -velX * delta, height - 4);
-			if (r.width < 0)
+			r = new Rectangle(x + width / 2f, y + 2, width / 2f, height - 4);
+			if (r.width < 0) {
 				r.width = 0;
+				r.x = x + width;
+			}
 			return r;
 		default:
 			r = new Rectangle(x, y, width, height);
 			return r;
-		}
+		}*/
 	}
 }
